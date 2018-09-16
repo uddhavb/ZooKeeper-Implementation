@@ -7,11 +7,9 @@ def print_list():
         for child in children:
             data, stat = zk.get("/"+player+"/"+child)
             scores[player+"~"+child] = [data.decode("utf-8"),stat.ctime]
-    # print(scores)
     # sort by creation time in reverse order(most recent first)
-
     most_recent = sorted(scores.items(), key=lambda e: e[1][1], reverse = True)
-    print("\n\n\n\n\t\t\t\tMost recent scores\n\t\t\t--------------------------------")
+    print("\n\n\n\n\t\t\t\tMost recent scores\n\t\t\t---------------------------------------------------------------------")
     for i in range(lsize):
         name = most_recent[i][0].split('~')[0]
         online = ""
@@ -19,10 +17,11 @@ def print_list():
         online_players = (data.decode("utf-8")).split('~')
         if name in online_players:
             online = "**"
-        print("\t\t\t" + name + " "*(20 - len(name)) + most_recent[i][1][0] + "\t" + online)
+        print("\t\t\t" + name + " "*(30 - len(name)) + most_recent[i][1][0] + " "*(30-len(str(most_recent[i][1][0]))) + online)
 
+    # sort by scores in reverse order(highest first)
     highest_scores = sorted(scores.items(), key=lambda e: e[1][0], reverse = True)
-    print("\t\t\t\tHighest scores\n\t\t\t--------------------------------")
+    print("\t\t\t\tHighest scores\n\t\t\t---------------------------------------------------------------------")
     for i in range(lsize):
         name = highest_scores[i][0].split('~')[0]
         online = ""
@@ -30,7 +29,7 @@ def print_list():
         online_players = (data.decode("utf-8")).split('~')
         if name in online_players:
             online = "**"
-        print("\t\t\t" + name + " "*(20 - len(name)) + highest_scores[i][1][0] + "\t" + online)
+        print("\t\t\t" + name + " "*(30 - len(name)) + highest_scores[i][1][0] + " "*(30-len(str(highest_scores[i][1][0]))) + online)
 
 
 

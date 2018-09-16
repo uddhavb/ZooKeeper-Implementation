@@ -1,3 +1,17 @@
+def addScore(name, score):
+    if(not zk.exists(name)):
+        # if the player does not exist, then create an entry for the player
+        zk.ensure_path(name)
+        zk.create(name+"/1", score)
+    else:
+        # create a new version(child node) for the player node to add the latest score
+        children = zk.get_children(name)
+        children = list(map(int, children))
+        children.sort()
+        scoreVersion = str(children[-1] + 1)
+        print(scoreVersion)
+        zk.create(name + '/' + scoreVersion, score)
+
 def goOffline():
     # remove player from online players list
     data, stat = zk.get("/online_players")
@@ -31,12 +45,15 @@ zk.start()
 
 name = "/"+sys.argv[2]
 # keep a list of online players
+# if player is already online then throw exception and exit
 data, stat = zk.get("/online_players")
 online_players = (data.decode("utf-8")).split('~')
 if name[1:] in online_players:
     raise Exception("\n\n\nPlayer is already online")
+# add player to the online players list
 goOnline()
 
+# get the automated testing test case inputs
 if(len(sys.argv) > 3):
     count = int(sys.argv[3])
     delay = int(sys.argv[4])
@@ -44,47 +61,25 @@ if(len(sys.argv) > 3):
 
 try:
     print(name[1:] + " is online")
-
     try:
         delay
     except:
-           # if no delay and score specified continuously take input from user
+           # if delay and score are not specified, continuously take input from user
         while(True):
-            if(not zk.exists(name)):
-                try:
-                    score
-                except NameError:
-                    score = bytes(str(input('Enter your score: ')).encode("utf-8"))
-                zk.ensure_path(name)
-                zk.create(name+"/1", score)
-            else:
-                score = bytes(str(input('Enter your score: ')).encode("utf-8"))
-                children = zk.get_children(name)
-                children = list(map(int, children))
-                children.sort()
-                scoreVersion = str(children[-1] + 1)
-                zk.create(name + '/' + scoreVersion, score)
+            score = bytes(str(input('Enter your score: ')).encode("utf-8"))
+            addScore(name,score)
             print("Score posted:  " + score)
-    # if delay and score is given
+    # if delay and score is given (for test automation)
     import numpy
     from time import sleep
+    # get normally distributed values for delay and score. Ensure that they are positive
     delays = abs(numpy.random.normal(delay, 0.01, count))
     scores = abs(numpy.random.normal(score, 10000, count))
     count -= 1 # To index lists
     while(count>=0):
         sleep(delays[count])
-        if(not zk.exists(name)):
-            score = bytes(str(int(scores[count])).encode("utf-8"))
-            zk.ensure_path(name)
-            zk.create(name+"/1", score)
-        else:
-            score = bytes(str(int(scores[count])).encode("utf-8"))
-            children = zk.get_children(name)
-            children = list(map(int, children))
-            children.sort()
-            scoreVersion = str(children[-1] + 1)
-            print(scoreVersion)
-            zk.create(name + '/' + scoreVersion, score)
+        score = bytes(str(int(scores[count])).encode("utf-8"))
+        addScore(name,score)
         print("Score posted:  " + score)
         count -= 1
     goOffline()
