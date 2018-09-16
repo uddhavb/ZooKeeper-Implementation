@@ -31,6 +31,10 @@ zk.start()
 
 name = "/"+sys.argv[2]
 # keep a list of online players
+data, stat = zk.get("/online_players")
+online_players = (data.decode("utf-8")).split('~')
+if name[1:] in online_players:
+    raise Exception("\n\n\nPlayer is already online")
 goOnline()
 
 if(len(sys.argv) > 3):
